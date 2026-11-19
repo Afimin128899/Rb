@@ -1,0 +1,981 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local player = Players.LocalPlayer
+local sessions = game:GetService("ReplicatedStorage"):WaitForChild("UntilDawnSessions")
+local world = Instance.new("Folder")
+world.Name = "Room13"
+world.Parent = workspace
+
+local function part(name, size, position, color, parent)
+	local object = Instance.new("Part")
+	object.Name = name
+	object.Size = size
+	object.Position = position
+	object.Color = color
+	object.Anchored = true
+	object.Material = Enum.Material.SmoothPlastic
+	object.Parent = parent or world
+	return object
+end
+
+local wall = Color3.fromRGB(67, 72, 67)
+local wood = Color3.fromRGB(83, 53, 42)
+local metal = Color3.fromRGB(100, 105, 102)
+local dark = Color3.fromRGB(32, 34, 35)
+Lighting.ClockTime = 0
+Lighting.Brightness = 0
+Lighting.Ambient = Color3.fromRGB(43, 45, 50)
+Lighting.GlobalShadows = true
+Lighting.ExposureCompensation = .15
+local grade = Instance.new("ColorCorrectionEffect")
+grade.Name = "Room13Grade"
+grade.Saturation = -.24
+grade.Contrast = .12
+grade.Parent = Lighting
+Lighting.OutdoorAmbient = Lighting.Ambient
+
+part("Пол комнаты", Vector3.new(14, 1, 15), Vector3.new(0, -.5, 3), dark)
+part("Пол коридора", Vector3.new(25, 1, 10), Vector3.new(0, -.5, -9), dark)
+part("Потолок", Vector3.new(25, 1, 25), Vector3.new(0, 8.5, -2), wall)
+part("Левая стена", Vector3.new(1, 8, 15), Vector3.new(-7, 4, 3), wall)
+part("Правая стена", Vector3.new(1, 8, 15), Vector3.new(7, 4, 3), wall)
+part("Задняя стена", Vector3.new(14, 8, 1), Vector3.new(0, 4, 10.5), wall)
+part("Слева от двери", Vector3.new(5, 8, 1), Vector3.new(-4.5, 4, -4), wall)
+part("Справа от двери", Vector3.new(5, 8, 1), Vector3.new(4.5, 4, -4), wall)
+part("Над дверью", Vector3.new(4, 1.5, 1), Vector3.new(0, 7.25, -4), wall)
+part("Стена коридора", Vector3.new(25, 8, 1), Vector3.new(0, 4, -13.5), wall)
+part("Угол коридора", Vector3.new(1, 8, 10), Vector3.new(9, 4, -9), wall)
+part("Торец коридора", Vector3.new(1, 8, 10), Vector3.new(-12, 4, -9), wall)
+local door = part("Дверь 13", Vector3.new(4, 6.5, .4), Vector3.new(0, 3.25, -4), wood)
+local lock = part("Замок", Vector3.new(.24, .40, .16), Vector3.new(1.47, 3, -3.74), metal)
+local eye = part("Глазок", Vector3.new(.16, .16, .13), Vector3.new(0, 4.7, -3.74), metal)
+part("Стол", Vector3.new(3.3, .3, 2), Vector3.new(4.3, 2.65, -1.6), wood)
+part("Тумба", Vector3.new(3, 2.5, 1.7), Vector3.new(4.3, 1.25, -1.6), wood)
+local drawer = part("Ящик", Vector3.new(2.5, .36, .14), Vector3.new(4.3, 2.25, -.68), wood)
+local handle = part("Ручка ящика", Vector3.new(.45, .12, .16), Vector3.new(4.3, 2.25, -.56), metal)
+local flashlight = part("Фонарик", Vector3.new(.26, .25, .66), Vector3.new(4.25, 2.28, -.34), metal)
+flashlight.Transparency = 1
+local function setDrawer(open)
+	local offset = open and .65 or 0
+	drawer.Position = Vector3.new(4.3, 2.25, -.68 + offset)
+	handle.Position = Vector3.new(4.3, 2.25, -.56 + offset)
+	flashlight.Transparency = open and 0 or 1
+end
+local function textOn(object, face, content, color, background)
+	local surface = Instance.new("SurfaceGui")
+	surface.Face = face
+	surface.LightInfluence = .65
+	surface.CanvasSize = Vector2.new(420, 280)
+	surface.Parent = object
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.fromScale(1, 1)
+	text.BackgroundColor3 = background
+	text.TextColor3 = color
+	text.TextScaled = true
+	text.TextWrapped = true
+	text.Font = Enum.Font.GothamMedium
+	text.Text = content
+	text.Parent = surface
+	return text
+end
+
+local cream = Color3.fromRGB(224, 213, 180)
+local phone = part("Телефон", Vector3.new(.68, .09, 1.1), Vector3.new(4.6, 2.86, -1.42), dark)
+local phoneScreen = textOn(phone, Enum.NormalId.Top, "00:00", cream, dark)
+local plan = part("Схема этажа", Vector3.new(2.05, 1.4, .08), Vector3.new(-3.8, 4.6, -3.43), cream)
+textOn(plan, Enum.NormalId.Back, "ЭТАЖ 1\n[13]  [14]\nЛЕСТНИЦА  →  ЩИТОК", dark, cream)
+
+local rng = Random.new(13)
+local function detail(name, size, position, color, material)
+	local object = part(name, size, position, color)
+	object.Material = material
+	return object
+end
+
+for row = 0, 13 do
+	for column = 0, 4 do
+		local shade = rng:NextInteger(43, 62)
+		detail("Доска пола", Vector3.new(2.77, .035, 1.05), Vector3.new(-5.6 + column * 2.8, .018, -3.85 + row * 1.06),
+			Color3.fromRGB(shade + 19, shade + 5, shade), Enum.Material.WoodPlanks)
+	end
+end
+for x = -10, 8, 2 do
+	for z = -12, -6, 2 do
+		local shade = rng:NextInteger(57, 75)
+		detail("Плитка коридора", Vector3.new(1.97, .04, 1.97), Vector3.new(x, .025, z),
+			Color3.fromRGB(shade, shade + 5, shade + 4), Enum.Material.Slate)
+	end
+end
+local trim = Color3.fromRGB(42, 48, 47)
+for _, side in ipairs({-1, 1}) do
+	detail("Плинтус", Vector3.new(.14, .34, 14), Vector3.new(side * 6.44, .2, 3.45), trim, Enum.Material.Wood)
+	detail("Косяк", Vector3.new(.21, 6.7, .18), Vector3.new(side * 2.06, 3.35, -3.46), trim, Enum.Material.Wood)
+end
+detail("Притолока", Vector3.new(4.32, .2, .18), Vector3.new(0, 6.65, -3.46), trim, Enum.Material.Wood)
+detail("Старая труба", Vector3.new(.16, 7.7, .16), Vector3.new(-6.2, 3.9, -3.27), metal, Enum.Material.CorrodedMetal)
+detail("Нижняя панель коридора", Vector3.new(25, 2.05, .08), Vector3.new(0, 1.03, -12.94), trim, Enum.Material.Concrete)
+for _, x in ipairs({-6, 5}) do
+	detail("Соседняя дверь", Vector3.new(3.5, 6.35, .18), Vector3.new(x, 3.17, -12.82), wood, Enum.Material.WoodGrain)
+	local number = detail("Табличка", Vector3.new(.65, .35, .05), Vector3.new(x, 5.17, -12.70), dark, Enum.Material.Metal)
+	textOn(number, Enum.NormalId.Back, x < 0 and "12" or "14", cream, dark)
+end
+for x = -5.8, -2.4, .22 do
+	detail("Радиатор", Vector3.new(.17, 2.05, .4), Vector3.new(x, 1.23, -3.15), metal, Enum.Material.CorrodedMetal)
+end
+detail("Коврик", Vector3.new(3.6, .06, 1.65), Vector3.new(0, .07, -2.2), trim, Enum.Material.Fabric)
+detail("Кровать", Vector3.new(3.1, .45, 6.1), Vector3.new(-4.65, .8, 4.1), wood, Enum.Material.WoodGrain)
+detail("Матрас", Vector3.new(2.94, .36, 5.85), Vector3.new(-4.65, 1.19, 4.1), Color3.fromRGB(105, 106, 88), Enum.Material.Fabric)
+detail("Подушка", Vector3.new(2.15, .27, .95), Vector3.new(-4.65, 1.47, 2), cream, Enum.Material.Fabric)
+detail("Тетрадь", Vector3.new(.86, .055, 1.03), Vector3.new(3.69, 2.84, -1.85), trim, Enum.Material.Fabric)
+door.Material = Enum.Material.WoodGrain
+lock.Material = Enum.Material.Metal
+eye.Material = Enum.Material.Metal
+local doorNumber = detail("Номер комнаты", Vector3.new(.68, .34, .055), Vector3.new(0, 5.5, -3.77), dark, Enum.Material.Metal)
+textOn(doorNumber, Enum.NormalId.Back, "13", cream, dark)
+local doorHandle = detail("Дверная ручка", Vector3.new(.36, .10, .13), Vector3.new(1.36, 3.09, -3.62), metal, Enum.Material.Metal)
+
+local function lamp(name, position, color, brightness)
+	local fixture = part(name, Vector3.new(3.2, .15, .4), position, color)
+	fixture.Material = Enum.Material.Neon
+	local light = Instance.new("PointLight")
+	light.Color = color
+	light.Brightness = brightness
+	light.Range = 19
+	light.Shadows = true
+	light.Parent = fixture
+	return light
+end
+
+local roomLight = lamp("Лампа комнаты", Vector3.new(0, 7.8, 0), Color3.fromRGB(255, 202, 145), 1.6)
+local hallLight = lamp("Лампа коридора", Vector3.new(0, 7.8, -8), Color3.fromRGB(182, 214, 197), 1)
+lamp("Лампа над лестницей", Vector3.new(6.6, 7.8, -10), Color3.fromRGB(149, 175, 165), .45)
+local drawerGlow = Instance.new("PointLight")
+drawerGlow.Color = Color3.fromRGB(196, 219, 244)
+drawerGlow.Range = 5
+drawerGlow.Brightness = 0
+drawerGlow.Parent = flashlight
+local deskLight = lamp("Настольная лампа", Vector3.new(5.45, 3.45, -2.25), Color3.fromRGB(255, 202, 139), .7)
+deskLight.Range = 8
+deskLight.Parent.Size = Vector3.new(.37, .12, .29)
+detail("Стойка лампы", Vector3.new(.10, .60, .10), Vector3.new(5.45, 3.11, -2.25), dark, Enum.Material.Metal)
+local stepEmitter = part("Источник шагов", Vector3.new(.1, .1, .1), Vector3.new(0, .3, -8), dark)
+stepEmitter.Transparency = 1
+stepEmitter.CanCollide = false
+-- Set uploaded audio IDs here to use the original Foley from UntilDawn-Audio.zip.
+local audioIds = {
+	knock = 0, step = 0, lock = 0, hinge = 0, drawer = 0,
+	phone = 0, room = 0, hall = 0, blackout = 0,
+}
+local soundService = game:GetService("SoundService")
+local mix = Instance.new("SoundGroup")
+mix.Name = "Room13Mix"
+mix.Parent = soundService
+
+local function sound(key, fallback, source, volume, distance)
+	local object = Instance.new("Sound")
+	object.Name = key
+	object.SoundId = audioIds[key] > 0 and ("rbxassetid://" .. audioIds[key]) or ("rbxasset://sounds/" .. fallback)
+	object.SoundGroup = mix
+	object.Volume = volume
+	object.RollOffMinDistance = 3
+	object.RollOffMaxDistance = distance
+	object.Parent = source
+	return object
+end
+
+local function equalizer(source, low, mid, high)
+	local effect = Instance.new("EqualizerSoundEffect")
+	effect.LowGain = low
+	effect.MidGain = mid
+	effect.HighGain = high
+	effect.Parent = source
+	return effect
+end
+
+local footsteps = sound("step", "action_footsteps_plastic.mp3", stepEmitter, .24, 27)
+local knock = sound("knock", "action_jump.mp3", door, .65, 33)
+equalizer(knock, 5, 1, -17)
+local stepFilter = equalizer(footsteps, 1, 0, -14)
+local latch = sound("lock", "button.wav", lock, .4, 17)
+local hingeSound = sound("hinge", "action_get_up.mp3", door, .31, 20)
+equalizer(hingeSound, 0, -3, -12)
+local drawerSound = sound("drawer", "action_get_up.mp3", drawer, .35, 16)
+equalizer(drawerSound, 3, 0, -8)
+local buzz = sound("phone", "electronicpingshort.wav", phone, .28, 23)
+local outage = sound("blackout", "bass.wav", roomLight.Parent, .32, 21)
+equalizer(outage, 5, -5, -19)
+local vent = sound("room", "bass.wav", deskLight.Parent, 0, 21)
+local hallTone = sound("hall", "action_falling.mp3", hallLight.Parent, 0, 30)
+vent.Looped = true
+hallTone.Looped = true
+vent.PlaybackSpeed = audioIds.room > 0 and 1 or .46
+hallTone.PlaybackSpeed = audioIds.hall > 0 and 1 or .55
+equalizer(vent, 1, -12, -24)
+equalizer(hallTone, 0, -9, -19)
+local ambientTween = {}
+local function ambience(roomVolume, hallVolume)
+	for source, volume in pairs({[vent] = roomVolume, [hallTone] = hallVolume}) do
+		if ambientTween[source] then ambientTween[source]:Cancel() end
+		ambientTween[source] = TweenService:Create(source, TweenInfo.new(.48), {Volume = volume})
+		ambientTween[source]:Play()
+	end
+end
+
+local function restartSound(source, speed)
+	source:Stop()
+	source.PlaybackSpeed = speed or 1
+	source:Play()
+end
+
+local phoneGlow = Instance.new("PointLight")
+phoneGlow.Color = Color3.fromRGB(177, 209, 230)
+phoneGlow.Range = 5
+phoneGlow.Brightness = 0
+phoneGlow.Parent = phone
+
+local audioGeneration = 0
+local function clearTransientAudio()
+	audioGeneration += 1
+	phoneGlow.Brightness = 0
+	for _, source in ipairs({knock, footsteps, latch, hingeSound, drawerSound, buzz, outage}) do
+		source:Stop()
+	end
+end
+
+local function cueAfter(delay, action)
+	local generation = audioGeneration
+	task.delay(delay, function()
+		if audioGeneration == generation then action() end
+	end)
+end
+
+
+local visitors = {
+	{
+		time = "00:20", label = "Тук-тук… тук.", rhythm = {0, .16, .56},
+		line = "Это Миша, из четырнадцатой. Вернёшь фонарик?",
+		look = "Парень в зелёной толстовке. В руках связка ключей.",
+		question = "Что написано на фонарике?", answer = "«Миша, 14». Я наклеил этикетку на ручку.",
+		color = Color3.fromRGB(74, 116, 86),
+		opened = "Миша забирает фонарик и оставляет батарейки. «Телефон сел. Если что, я не смогу написать».",
+		closed = "«Ладно, оставь у себя». Миша уходит.",
+	},
+	{
+		time = "01:05", label = "БУМ. БУМ. БУМ.", rhythm = {0, .29, .58}, pitch = .68,
+		line = "Электрик. Щиток у тебя в комнате, открывай.",
+		look = "Человек в серой форме держит пустую пластиковую карточку.",
+		question = "Покажите удостоверение", answer = "«Вот же». На карточке нет ни имени, ни фотографии.",
+		color = Color3.fromRGB(91, 97, 111), threat = true,
+		closed = "Ручка двери медленно опускается. Затем в коридоре снова тихо.",
+	},
+	{
+		time = "02:10", label = "Тр-р-тук! «Ты не спишь?»", rhythm = {0, .11, .22, .33},
+		line = "Я Лера, с верхнего этажа. За мной кто-то шёл.",
+		look = "Лера прижалась к стене. В зеркале у лестницы виден силуэт за углом.",
+		question = "Ты видела, кто шёл за тобой?", answer = "Нет. Он остановился, когда я остановилась.",
+		color = Color3.fromRGB(148, 92, 114),
+		opened = "Лера показывает вечернее сообщение Миши. Он собирался уйти к брату.",
+		closed = "Лера бежит к лестнице. Шаги за углом трогаются следом.",
+	},
+	{
+		time = "03:40", label = "Тук.", rhythm = {0},
+		line = "Доставка. Тут заказ, откроете?",
+		look = "Курьер с пакетом. На чеке крупно напечатано «31».",
+		question = "В какую комнату заказ?", answer = "В тридцать первую… Ой. А у вас тринадцатая?",
+		color = Color3.fromRGB(190, 142, 60),
+		opened = "Курьер замечает номер на двери, извиняется и уходит наверх.",
+		closed = "Курьер уходит. Возле лестницы он с кем-то здоровается.",
+	},
+	{
+		time = "05:48", label = "Тук-тук… тук.", rhythm = {0, .16, .56},
+		line = "Это Миша. Я же только что тебе написал!",
+		look = "Зелёная толстовка. Знакомое лицо. Рука с ключами совершенно неподвижна.",
+		question = "Зачем ты приходил раньше?", answer = "Какой фонарик? Открой, я замёрз.",
+		color = Color3.fromRGB(74, 116, 86), threat = true,
+		closed = "Из-за двери доносится знакомый голос: «Я же стучу как обычно». Потом он замолкает.",
+	},
+}
+
+local guest = Instance.new("Model")
+guest.Name = "Посетитель"
+guest.Parent = world
+local skin = Color3.fromRGB(192, 151, 123)
+local roomView = CFrame.lookAt(Vector3.new(-.8, 4.8, 5.8), Vector3.new(.35, 4, -4))
+local doorView = CFrame.lookAt(Vector3.new(.1, 4.55, .3), Vector3.new(0, 4.23, -4))
+local hallView = CFrame.lookAt(Vector3.new(0, 4.7, -4.25), Vector3.new(0, 3.7, -8))
+local drawerView = CFrame.lookAt(Vector3.new(3.3, 4.2, 1.6), Vector3.new(4.3, 2.2, -1.4))
+local phoneView = CFrame.lookAt(Vector3.new(4.5, 4.5, -.16), phone.Position)
+local planView = CFrame.lookAt(Vector3.new(-3.8, 4.73, -.89), plan.Position)
+local view = roomView
+local renderedView = roomView
+local renderedFov = 67
+local impact = 0
+local guestOrigin
+local guestArrival = 0
+local guestIndex
+local guestDeparting = false
+
+local function stepSequence(offsets, departure, visitorIndex)
+	for beat, offset in ipairs(offsets) do
+		cueAfter(offset, function()
+			if not guestOrigin then return end
+			footsteps.Volume = departure and (.24 - beat * .025) or (.12 + beat * .038)
+			local base = visitorIndex == 2 and .78 or .93
+			restartSound(footsteps, base + (beat % 2) * .13)
+		end)
+	end
+end
+
+local mirror = detail("Зеркало у лестницы", Vector3.new(1.45, 2.17, .11), Vector3.new(3.65, 3.81, -12.77), metal, Enum.Material.Metal)
+local shadow = part("Силуэт в зеркале", Vector3.new(.51, 1.4, .07), mirror.Position + Vector3.new(.12, -.19, .09), dark)
+shadow.Transparency = 1
+
+local function drawGuest(visitor, index)
+	guest:ClearAllChildren()
+	guest.WorldPivot = CFrame.new(0, 2.5, -8)
+	part("Куртка", Vector3.new(1.45, 1.7, .65), Vector3.new(0, 3, -8), visitor.color, guest)
+	local head = part("Голова", Vector3.new(.94, .99, .86), Vector3.new(0, 4.3, -8), skin, guest)
+	local faceMesh = Instance.new("SpecialMesh")
+	faceMesh.MeshType = Enum.MeshType.Head
+	faceMesh.Parent = head
+	local neck = part("Шея", Vector3.new(.4, .5, .4), Vector3.new(0, 3.87, -8), skin, guest)
+	neck.Material = Enum.Material.SmoothPlastic
+	part("Молния", Vector3.new(.045, 1.43, .03), Vector3.new(0, 3.1, -7.66), dark, guest)
+	part("Ворот", Vector3.new(.67, .21, .52), Vector3.new(0, 3.79, -8), visitor.color, guest)
+	part("Волосы", Vector3.new(1, .2, .86), Vector3.new(0, 4.72, -8), dark, guest)
+	for _, side in ipairs({-1, 1}) do
+		part("Рука", Vector3.new(.41, 1.68, .52), Vector3.new(side * .94, 3, -8), visitor.color, guest)
+		part("Нога", Vector3.new(.63, 2.15, .64), Vector3.new(side * .38, 1.08, -8), dark, guest)
+		part("Глаз", Vector3.new(.10, .08, .04), Vector3.new(side * .21, 4.37, -7.59), dark, guest)
+	end
+	if index == 2 or index == 4 then
+		part("Предмет", Vector3.new(.48, .32, .24), Vector3.new(.94, 2.7, -7.58), metal, guest)
+	elseif index == 3 then
+		guest:PivotTo(guest:GetPivot() + Vector3.new(-1.12, 0, .52))
+	else
+		part("Ключи", Vector3.new(.15, .3, .09), Vector3.new(.94, 2.19, -7.71), metal, guest)
+	end
+	guestOrigin = guest:GetPivot()
+	guestArrival = os.clock()
+	guestIndex = index
+	guestDeparting = false
+	shadow.Transparency = index == 3 and 0 or 1
+end
+
+RunService:BindToRenderStep("Room13Camera", Enum.RenderPriority.Camera.Value + 1, function(dt)
+	local camera = workspace.CurrentCamera
+	if not camera then return end
+	local now = os.clock()
+	local elapsed = now - guestArrival
+	if guestOrigin then
+		local travel = 1 - math.clamp(elapsed / .8, 0, 1)
+		local position = guestDeparting and math.clamp(elapsed, 0, 1) * 5 or travel * 3
+		local breathe = guestIndex == 5 and 0 or math.sin(now * 2.1) * .026
+		guest:PivotTo(guestOrigin + Vector3.new(position, breathe, 0))
+		stepEmitter.Position = guestOrigin.Position + Vector3.new(position, -2.2, 0)
+	end
+	local alpha = 1 - math.exp(-dt * 12)
+	local throughDoor = view == hallView or (renderedView.Position.Z < -3.7 and renderedView.Position.Z > -4.5)
+	renderedView = throughDoor and view or renderedView:Lerp(view, alpha)
+	local goalFov = view == hallView and 87 or (view == roomView and 67 or 56)
+	renderedFov += (goalFov - renderedFov) * alpha
+	impact *= math.exp(-dt * 13)
+	camera.CameraType = Enum.CameraType.Scriptable
+	camera.CFrame = renderedView * CFrame.Angles(math.sin(now * 44) * impact, 0, math.cos(now * 31) * impact * .38)
+	camera.Focus = renderedView * CFrame.new(0, 0, -5)
+	camera.FieldOfView = renderedFov
+end)
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "UntilDawn"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local function label(parent, name, size, position, font, textSize)
+	local item = Instance.new("TextLabel")
+	item.Name = name
+	item.Size = size
+	item.Position = position
+	item.BackgroundTransparency = 1
+	item.TextColor3 = Color3.fromRGB(242, 229, 207)
+	item.Font = font
+	item.TextSize = textSize
+	item.TextWrapped = true
+	item.Parent = parent
+	return item
+end
+
+local amber = Color3.fromRGB(216, 177, 117)
+local paper = Color3.fromRGB(235, 232, 220)
+local muted = Color3.fromRGB(175, 180, 169)
+local ink = Color3.fromRGB(16, 20, 21)
+
+local function frame(parent, color, size, position)
+	local item = Instance.new("Frame")
+	item.BorderSizePixel = 0
+	item.BackgroundColor3 = color
+	item.Size = size
+	item.Position = position
+	item.Parent = parent
+	return item
+end
+
+local optic = frame(gui, Color3.new(), UDim2.fromScale(1, 1), UDim2.fromScale(0, 0))
+optic.BackgroundTransparency = 1
+optic.Visible = false
+local function opticEdge(size, position, rotation)
+	local edge = frame(optic, Color3.new(), size, position)
+	local gradient = Instance.new("UIGradient")
+	gradient.Rotation = rotation
+	gradient.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(.36, .07),
+		NumberSequenceKeypoint.new(1, 1),
+	})
+	gradient.Parent = edge
+end
+opticEdge(UDim2.fromScale(.29, 1), UDim2.fromScale(0, 0), 0)
+opticEdge(UDim2.fromScale(.29, 1), UDim2.fromScale(.71, 0), 180)
+opticEdge(UDim2.fromScale(1, .29), UDim2.fromScale(0, 0), 90)
+opticEdge(UDim2.fromScale(1, .23), UDim2.fromScale(0, .77), 270)
+
+local hud = frame(gui, ink, UDim2.fromOffset(187, 66), UDim2.fromOffset(17, 12))
+hud.BackgroundTransparency = .14
+frame(hud, amber, UDim2.new(0, 2, 1, 0), UDim2.fromScale(0, 0))
+local clock = label(hud, "Часы", UDim2.new(1, -28, 0, 28), UDim2.fromOffset(13, 5), Enum.Font.Code, 17)
+clock.TextXAlignment = Enum.TextXAlignment.Left
+clock.TextColor3 = paper
+local status = label(hud, "Замок", UDim2.new(1, -28, 0, 19), UDim2.fromOffset(13, 34), Enum.Font.GothamMedium, 12)
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.TextColor3 = muted
+
+local soundToggle = Instance.new("TextButton")
+soundToggle.Name = "Звук"
+soundToggle.Size = UDim2.fromOffset(86, 38)
+soundToggle.AnchorPoint = Vector2.new(1, 0)
+soundToggle.Position = UDim2.new(1, -17, 0, 12)
+soundToggle.BackgroundColor3 = ink
+soundToggle.BorderSizePixel = 0
+soundToggle.Font = Enum.Font.GothamMedium
+soundToggle.TextSize = 12
+soundToggle.TextColor3 = paper
+soundToggle.Text = "Звук: вкл."
+soundToggle.Parent = gui
+soundToggle.Activated:Connect(function()
+	mix.Volume = mix.Volume == 0 and 1 or 0
+	soundToggle.Text = mix.Volume == 0 and "Звук: выкл." or "Звук: вкл."
+end)
+
+local exitButton = Instance.new("TextButton")
+exitButton.Name = "Выйти"
+exitButton.Size = UDim2.fromOffset(86, 34)
+exitButton.AnchorPoint = Vector2.new(1, 0)
+exitButton.Position = UDim2.new(1, -17, 0, 54)
+exitButton.BackgroundColor3 = ink
+exitButton.BorderSizePixel = 0
+exitButton.Font = Enum.Font.GothamMedium
+exitButton.TextSize = 12
+exitButton.TextColor3 = paper
+exitButton.Text = "Выйти"
+exitButton.Visible = false
+exitButton.Parent = gui
+
+local audioCaption = label(gui, "Звуковая подсказка", UDim2.new(1, -34, 0, 27), UDim2.fromOffset(17, 83), Enum.Font.GothamMedium, 13)
+audioCaption.TextXAlignment = Enum.TextXAlignment.Left
+audioCaption.TextColor3 = paper
+audioCaption.Text = ""
+local captionTicket = 0
+local function caption(text, duration)
+	captionTicket += 1
+	local ticket = captionTicket
+	audioCaption.Text = text
+	task.delay(duration or 2, function()
+		if captionTicket == ticket then audioCaption.Text = "" end
+	end)
+end
+
+local panel = frame(gui, ink, UDim2.new(1, -32, 0, 210), UDim2.new(.5, 0, 1, -15))
+panel.AnchorPoint = Vector2.new(.5, 1)
+panel.BackgroundTransparency = .06
+local limit = Instance.new("UISizeConstraint")
+limit.MaxSize = Vector2.new(720, 210)
+limit.Parent = panel
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(102, 110, 103)
+border.Transparency = .38
+border.Parent = panel
+frame(panel, amber, UDim2.fromOffset(42, 2), UDim2.fromOffset(16, 0))
+
+local heading = label(panel, "Заголовок", UDim2.new(1, -32, 0, 23), UDim2.fromOffset(16, 10), Enum.Font.GothamBold, 17)
+heading.TextXAlignment = Enum.TextXAlignment.Left
+heading.TextColor3 = amber
+local message = label(panel, "Рассказ", UDim2.new(1, -32, 0, 66), UDim2.fromOffset(16, 36), Enum.Font.Gotham, 17)
+message.TextXAlignment = Enum.TextXAlignment.Left
+message.TextYAlignment = Enum.TextYAlignment.Top
+message.TextColor3 = paper
+local messageLimit = Instance.new("UITextSizeConstraint")
+messageLimit.MinTextSize = 13
+messageLimit.MaxTextSize = 17
+messageLimit.Parent = message
+message.TextScaled = true
+local buttons = frame(panel, ink, UDim2.new(1, -32, 0, 93), UDim2.fromOffset(16, 104))
+buttons.BackgroundTransparency = 1
+local grid = Instance.new("UIGridLayout")
+grid.CellPadding = UDim2.new(.015, 0, 0, 5)
+grid.CellSize = UDim2.new(.322, 0, 0, 43)
+grid.FillDirectionMaxCells = 3
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+grid.Parent = buttons
+
+local numberKeys = {
+	[Enum.KeyCode.One] = 1, [Enum.KeyCode.Two] = 2, [Enum.KeyCode.Three] = 3,
+	[Enum.KeyCode.Four] = 4, [Enum.KeyCode.Five] = 5, [Enum.KeyCode.Six] = 6,
+}
+local keyboardActions = {}
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	local action = keyboardActions[numberKeys[input.KeyCode] or 0]
+	if action then action() end
+end)
+
+local powered = true
+local morning = false
+local function show(title, passage, choices)
+	local atPeephole = view == hallView
+	optic.Visible = atPeephole
+	stepFilter.HighGain = atPeephole and -2 or (view == doorView and -9 or -16)
+	ambience(powered and (atPeephole and .018 or .073) or 0, morning and .022 or (atPeephole and .10 or .034))
+	heading.Text = title
+	message.Text = passage
+	panel.Size = UDim2.new(1, -32, 0, #choices > 3 and 210 or 159)
+	table.clear(keyboardActions)
+	for _, item in ipairs(buttons:GetChildren()) do
+		if item:IsA("TextButton") then item:Destroy() end
+	end
+	for order, choice in ipairs(choices) do
+		local button = Instance.new("TextButton")
+		button.BorderSizePixel = 0
+		button.LayoutOrder = order
+		button.Text = UserInputService.KeyboardEnabled and string.format("%d   %s", order, choice[1]) or choice[1]
+		button.Font = Enum.Font.GothamMedium
+		button.TextSize = 13
+		button.TextWrapped = true
+		button.TextColor3 = paper
+		button.BackgroundColor3 = choice[1] == "Открыть" and Color3.fromRGB(94, 53, 44) or Color3.fromRGB(39, 47, 46)
+		button.Parent = buttons
+		local radius = Instance.new("UICorner")
+		radius.CornerRadius = UDim.new(0, 3)
+		radius.Parent = button
+		button.Activated:Connect(choice[2])
+		keyboardActions[order] = choice[2]
+	end
+end
+
+local function playKnock(rhythm, pitch, delay, fromDrawer)
+	local currentBeat = 0
+	for beat, offset in ipairs(rhythm) do
+		cueAfter((delay or 0) + offset, function()
+			if beat == 1 then caption(fromDrawer and "[Стук в ящике]" or "[Стук в дверь]") end
+			impact = .018
+			knock.Volume = beat == 1 and .76 or .57
+			currentBeat = beat
+			restartSound(knock, (pitch or .88) * (beat % 2 == 0 and 1.04 or 1))
+			if audioIds.knock == 0 then
+				cueAfter(.105, function()
+					if currentBeat == beat then knock:Stop() end
+				end)
+			end
+		end)
+	end
+end
+
+local closedDoor = door.CFrame
+local closedLock = lock.CFrame
+local closedEye = eye.CFrame
+local closedNumber = doorNumber.CFrame
+local closedHandle = doorHandle.CFrame
+local hinge = CFrame.new(-2, 3.25, -4)
+local doorIsOpen = false
+local function moveDoor(open, silent)
+	if doorIsOpen ~= open and not silent then
+		restartSound(hingeSound, open and .78 or .91)
+		if open then restartSound(latch, .74) end
+		if not open then cueAfter(.27, function() restartSound(latch, .96) end) end
+	end
+	doorIsOpen = open
+	local rotation = open and CFrame.Angles(0, math.rad(-85), 0) or CFrame.identity
+	for object, original in pairs({[door] = closedDoor, [lock] = closedLock, [eye] = closedEye, [doorNumber] = closedNumber, [doorHandle] = closedHandle}) do
+		TweenService:Create(object, TweenInfo.new(.38), {CFrame = hinge * rotation * hinge:ToObjectSpace(original)}):Play()
+	end
+end
+
+local showHome
+local index, mistakes, gaveFlashlight, sawLera, batteries
+local active
+local roomNumber
+local fastMode
+local timeline
+local mishaRhythm = visitors[1].rhythm
+
+local function clearGuest()
+	guestOrigin = nil
+	guest:ClearAllChildren()
+	shadow.Transparency = 1
+end
+
+local function dawn()
+	timeline = nil
+	clearTransientAudio()
+	powered = true
+	morning = true
+	restartSound(latch, 1.1)
+	caption("[В коридоре щёлкнуло реле]")
+	view = roomView
+	setDrawer(false)
+	drawerGlow.Brightness = 0
+	roomLight.Brightness = 2
+	deskLight.Brightness = .7
+	status.Text = "Смена окончена"
+	phoneScreen.Text = "06:00"
+	hallLight.Brightness = 4
+	Lighting.ClockTime = 6
+	clock.Text = "КОМНАТА 13  /  06:00"
+	show("Ты дождался рассвета", "В коридоре загорается свет. За дверью больше никого.", {
+		{"В главное меню", function() showHome() end},
+	})
+end
+
+local function waitForDawn()
+	sessions:FireServer("DawnReady")
+	show("Перед рассветом", "За дверью тихо.", {})
+end
+
+local function finalKnock()
+	timeline = nil
+	clock.Text = "КОМНАТА 13  /  05:59"
+	phoneScreen.Text = "05:59"
+	view = roomView
+	knock.Parent = world:FindFirstChild("Тумба")
+	playKnock(mishaRhythm, nil, 0, true)
+	show("Тук-тук… тук.", "На этот раз стучат из ящика стола.", {
+		{"Открыть ящик", function()
+			view = drawerView
+			restartSound(drawerSound, .64)
+			setDrawer(true)
+			drawerGlow.Brightness = .9
+			show("Фонарик", gaveFlashlight and "В ящике лежит фонарик Миши. Ты точно помнишь, как отдал его." or "В ящике лежит фонарик Миши. Он включён.", {
+				{"Дождаться утра", waitForDawn},
+			})
+		end},
+		{"Дождаться утра", waitForDawn},
+	})
+end
+
+local function decide(open, timedOut)
+	active = nil
+	timeline = nil
+	clearTransientAudio()
+	local visitor = visitors[index]
+	view = roomView
+	setDrawer(false)
+	local result = timedOut and "Никто не ответил. Посетитель ушёл." or visitor.closed
+	if open then
+		moveDoor(true)
+		if visitor.threat then
+			mistakes += 1
+			powered = false
+			restartSound(outage, .76)
+			caption("[Треск. Гул лампы обрывается.]")
+			roomLight.Brightness = 0
+			deskLight.Brightness = 0
+			impact = .06
+			status.Text = mistakes == 1 and "Замок повреждён" or "Замок сломан"
+			result = "Свет погас. Кто-то по ту сторону двери придерживает замок."
+			if mistakes >= 2 then
+				clearGuest()
+				show("Замок не выдержал", "В темноте раздался щелчок. Дверь осталась открытой.", {
+					{"В главное меню", function() showHome() end},
+				})
+				return
+			end
+		else
+			result = visitor.opened
+			if index == 1 then
+				gaveFlashlight = true
+				batteries = true
+			elseif index == 3 then
+				sawLera = true
+			end
+		end
+	end
+	local function finishEncounter()
+		sessions:FireServer("Continue", index)
+		if not fastMode then show("Ждём остальных", "Следующий стук услышат все игроки одновременно.", {}) end
+	end
+	local choices = {{"Продолжить", finishEncounter}}
+	if open and visitor.threat and batteries then
+		table.insert(choices, {"Включить фонарик", function()
+			batteries = false
+			deskLight.Brightness = .95
+			finishEncounter()
+		end})
+	end
+	show(open and "Дверь открыта" or "Дверь закрыта", result, choices)
+end
+
+local function beginGap()
+	guestDeparting = true
+	guestArrival = os.clock()
+	stepSequence({.06, .38, .75}, true, index)
+	caption("[Удаляющиеся шаги]")
+	shadow.Transparency = 1
+	moveDoor(false)
+	show("Коридор затихает", "Шаги постепенно стихают за стеной.", {})
+end
+
+local function toMinutes(time)
+	local hours, minutes = time:match("(%d+):(%d+)")
+	return tonumber(hours) * 60 + tonumber(minutes)
+end
+
+local function nextVisitor(number, startedAt, duration, total)
+	index = number
+	local visitor = visitors[index]
+	local encounter = {}
+	active = encounter
+	local following = visitors[index + 1]
+	timeline = {
+		startedAt = startedAt, duration = duration,
+		firstMinute = toMinutes(visitor.time),
+		lastMinute = following and toMinutes(following.time) - 1 or 358,
+		count = 0, total = total,
+	}
+	clock.Text = "КОМНАТА 13  /  " .. visitor.time
+	clearTransientAudio()
+	drawGuest(visitor, index)
+	if index < 5 then
+		caption("[Шаги за дверью]", 1.05)
+		stepSequence({.05, .38, .73}, false, index)
+	end
+	playKnock(visitor.rhythm, visitor.pitch, index == 5 and .42 or 1.03)
+	if index == 5 then
+		cueAfter(1.5, function()
+			restartSound(buzz, .87)
+			phoneGlow.Brightness = 1
+			cueAfter(.48, function() phoneGlow.Brightness = .20 end)
+			caption("[Телефон вибрирует]")
+		end)
+	end
+	phoneScreen.Text = index == 5 and "1 НОВОЕ" or visitor.time
+	local function atDoor(title, line, camera)
+		if active ~= encounter then return end
+		view = camera or doorView
+		setDrawer(false)
+		local function listen()
+			atDoor(visitor.label, visitor.line)
+		end
+		local function inspectRoom()
+			view = roomView
+			show("Комната", "Осмотри предметы, пока посетитель ждёт за дверью.", {
+				{"Телефон", function()
+					view = phoneView
+					local inbox = "Новых сообщений нет."
+					if sawLera then inbox = "Переслано Лерой, 22:14 · Миша: «Сегодня к брату. Телефон почти сел»." end
+					if index == 5 then inbox = "Неизвестный номер, 05:48 · «Я у двери. Открой»." end
+					show("Сообщения", inbox, {{"К двери", listen}, {"К комнате", inspectRoom}})
+				end},
+				{"Схема этажа", function()
+					view = planView
+					show("План первого этажа", "Комнаты 13 и 14. Электрический щиток находится у лестницы, в конце коридора.", {
+						{"К двери", listen}, {"К комнате", inspectRoom},
+					})
+				end},
+				{"Ящик стола", function()
+					view = drawerView
+					restartSound(drawerSound, .82)
+					setDrawer(true)
+					if gaveFlashlight then flashlight.Transparency = 1 end
+					show("Ящик", gaveFlashlight and "Миша уже забрал фонарик." or "На ручке фонарика наклейка «Миша, 14».", {
+						{"К двери", listen}, {"К комнате", function() setDrawer(false) inspectRoom() end},
+					})
+				end},
+				{"К двери", listen},
+			})
+		end
+		show(title, line, {
+			{view == hallView and "Отойти от глазка" or "В глазок", function()
+				if view == hallView then listen() else atDoor("Глазок", visitor.look, hallView) end
+			end},
+			{"Задать вопрос", function() atDoor(visitor.question, visitor.answer) end},
+			{"Осмотреть комнату", inspectRoom},
+			{"Слушать гостя", listen},
+			{"Открыть", function() sessions:FireServer("Vote", index, true) end},
+			{"Не открывать", function() sessions:FireServer("Vote", index, false) end},
+		})
+	end
+	atDoor(visitor.label, "Кто-то ждёт снаружи.", roomView)
+	task.delay(2, function()
+		if active == encounter and view == roomView and heading.Text == visitor.label then
+			atDoor(visitor.label, visitor.line, roomView)
+		end
+	end)
+
+end
+
+local function resetNight()
+	index, mistakes = 0, 0
+	gaveFlashlight, sawLera, batteries = false, false, false
+	active = nil
+	timeline = nil
+	clearTransientAudio()
+	caption("", 0)
+	powered = true
+	morning = false
+	knock.Parent = door
+	drawerGlow.Brightness = 0
+	setDrawer(false)
+	clearGuest()
+	moveDoor(false, true)
+	view = roomView
+	roomLight.Brightness = 1.6
+	deskLight.Brightness = .7
+	hallLight.Brightness = 1
+	Lighting.ClockTime = 0
+	clock.Text = "КОМНАТА 13  /  00:00"
+	status.Text = "Замок цел"
+	phoneScreen.Text = "00:00"
+end
+
+local screen = "Home"
+local roster
+local pendingRoom
+local roomNames = {"Комната 1", "Комната 2", "Комната 3"}
+
+local function showRoomList(extra)
+	screen = "Rooms"
+	local choices = {}
+	if roster then
+		for number, entry in ipairs(roster) do
+			local joinable = entry.phase == "Lobby" and entry.count < 4
+			local state = string.format("%d/4", entry.count)
+			if entry.phase == "Finished" then
+				state = "Ночь окончена"
+			elseif entry.phase ~= "Lobby" then
+				state = "Идёт ночь"
+			end
+			table.insert(choices, {roomNames[number] .. " · " .. state, function()
+				if pendingRoom then return end
+				if joinable then
+					pendingRoom = number
+					sessions:FireServer("Join", number)
+				else
+					showRoomList("Эта комната сейчас занята. Выбери другую.")
+				end
+			end})
+		end
+	end
+	table.insert(choices, {"Назад", function() showHome() end})
+	show("Выбери комнату", extra or (roster and "В каждой комнате от 1 до 4 игроков." or "Загружаем список комнат…"), choices)
+end
+
+local function leaveRoom()
+	if roomNumber or pendingRoom then
+		roomNumber = nil
+		pendingRoom = nil
+		sessions:FireServer("Leave")
+	end
+	exitButton.Visible = false
+end
+
+showHome = function()
+	leaveRoom()
+	screen = "Home"
+	resetNight()
+	vent:Stop()
+	hallTone:Stop()
+	hud.Visible = false
+	show("До рассвета", "Кто-то постучит. Реши, стоит ли открывать.", {
+		{"Начать", function()
+			showRoomList()
+			sessions:FireServer("List")
+		end},
+	})
+end
+exitButton.Activated:Connect(showHome)
+
+local function showLobby(number, names, canStart)
+	screen = "Lobby"
+	roomNumber = number
+	exitButton.Visible = true
+	local fast = #names == 1
+	local summary = table.concat(names, " · ") .. "\n" .. (fast and "Соло · ускоренная ночь" or "Группа · обычный темп")
+	local choices = {{"Покинуть комнату", function() leaveRoom() showRoomList() end}}
+	if canStart then
+		table.insert(choices, 1, {"Начать ночь", function() sessions:FireServer("Start") end})
+	else
+		summary ..= " · ждём ведущего"
+	end
+	show(string.format("%s · %d/4", roomNames[number], #names), summary, choices)
+end
+
+RunService.Heartbeat:Connect(function()
+	if not timeline then return end
+	local elapsed = workspace:GetServerTimeNow() - timeline.startedAt
+	local fraction = math.clamp(elapsed / timeline.duration, 0, 1)
+	local minute = math.floor(timeline.firstMinute + fraction * (timeline.lastMinute - timeline.firstMinute))
+	clock.Text = string.format("КОМНАТА 13  /  %02d:%02d", math.floor(minute / 60), minute % 60)
+	local left = math.max(0, math.ceil(timeline.duration - elapsed))
+	if fastMode then
+		status.Text = string.format("%d с · %s", left, mistakes == 0 and "Замок цел" or "Замок повреждён")
+	else
+		status.Text = string.format("%d с · Голоса %d/%d", left, timeline.count, timeline.total)
+	end
+end)
+
+sessions.OnClientEvent:Connect(function(event, subject, a, b, c, d)
+	if event == "Rooms" then
+		roster = subject
+		if screen == "Rooms" then showRoomList() end
+	elseif event == "Unavailable" then
+		pendingRoom = nil
+		if screen == "Rooms" then
+			showRoomList("Комната уже занята. Выбери другую.")
+		end
+	elseif event == "Lobby" then
+		if (screen == "Rooms" and subject == pendingRoom) or (screen == "Lobby" and subject == roomNumber) then
+			pendingRoom = nil
+			showLobby(subject, a, b)
+		end
+	elseif subject == roomNumber then
+		if event == "Started" then
+			screen = "Night"
+			fastMode = a
+			resetNight()
+			hud.Visible = true
+			vent:Play()
+			hallTone:Play()
+		elseif event == "Round" then
+			nextVisitor(a, b, c, d)
+		elseif event == "Votes" and timeline and a == index then
+			timeline.count, timeline.total = b, c
+			if d ~= nil then
+				caption(d and "[Голос: открыть]" or "[Голос: оставить закрытой]", 1.3)
+			end
+		elseif event == "Result" and a == index then
+			decide(b, c)
+			if mistakes == 0 then status.Text = "Замок цел" end
+		elseif event == "Gap" and a == index then
+			beginGap()
+		elseif event == "Final" then
+			clearGuest()
+			finalKnock()
+		elseif event == "Dawn" then
+			dawn()
+		end
+	end
+end)
+
+showHome()
